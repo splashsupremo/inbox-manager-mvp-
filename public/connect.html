@@ -20,6 +20,9 @@
     </div>
 
     <button onclick="startFlow()" id="startBtn" class="w-full bg-blue-600 text-white py-4 rounded-2xl text-xl font-bold">Start Connection</button>
+
+    <!-- New error box -->
+    <p id="errorBox" class="hidden text-red-500 text-center mt-6 text-sm"></p>
   </div>
 
   <script>
@@ -27,12 +30,23 @@
     if (!token) window.location.href = '/index.html';
 
     async function startFlow() {
-      document.getElementById('startBtn').innerHTML = 'Loading...';
+      document.getElementById('startBtn').innerHTML = 'Loading... Please wait';
+      document.getElementById('errorBox').classList.add('hidden');
+
       const res = await fetch('/api/init-device-flow', { method: 'POST' });
       const data = await res.json();
-      document.getElementById('codeBox').value = data.user_code;
-      document.getElementById('codeArea').classList.remove('hidden');
-      document.getElementById('startBtn').classList.add('hidden');
+
+      if (data.user_code) {
+        // Success! Show the code
+        document.getElementById('codeBox').value = data.user_code;
+        document.getElementById('codeArea').classList.remove('hidden');
+        document.getElementById('startBtn').classList.add('hidden');
+      } else {
+        // Show the real error
+        document.getElementById('errorBox').textContent = data.error || 'Something went wrong. Check Render Logs!';
+        document.getElementById('errorBox').classList.remove('hidden');
+        document.getElementById('startBtn').innerHTML = 'Try Again';
+      }
     }
 
     function copyCode() {
