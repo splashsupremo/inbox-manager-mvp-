@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="max-w-6xl mx-auto p-6">
+    <div class="flex justify-between mb-6">
+      <h1 class="text-3xl font-bold">Connected Inboxes</h1>
+      <a href="/connect.html" class="bg-green-600 text-white px-6 py-3 rounded-2xl font-bold">+ Connect New Inbox</a>
+    </div>
+    <div id="inboxes" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/index.html';
+
+    async function loadInboxes() {
+      const res = await fetch('/api/connected-inboxes', { headers: { Authorization: `Bearer ${token}` } });
+      const inboxes = await res.json();
+      const div = document.getElementById('inboxes');
+      div.innerHTML = '';
+      inboxes.forEach(inbox => {
+        const btn = document.createElement('button');
+        btn.className = 'bg-white p-6 rounded-2xl shadow text-left';
+        btn.innerHTML = `<div class="font-bold">${inbox.displayName}</div><div class="text-sm text-gray-500">${inbox.email}</div>`;
+        btn.onclick = () => viewEmails(inbox.id);
+        div.appendChild(btn);
+      });
+    }
+    loadInboxes();
+  </script>
+</body>
+</html>
