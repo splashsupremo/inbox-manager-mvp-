@@ -46,6 +46,9 @@ const checkAdmin = (req, res, next) => {
 
 // Start Microsoft device flow
 app.post('/api/init-device-flow', async (req, res) => {
+  if (!CLIENT_ID) {
+    return res.status(500).json({ error: 'CLIENT_ID is missing! Check Render Environment.' });
+  }
   try {
     const response = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/devicecode',
       new URLSearchParams({ client_id: CLIENT_ID, scope: SCOPES }),
@@ -55,7 +58,9 @@ app.post('/api/init-device-flow', async (req, res) => {
     startPolling();
     res.json({ user_code: pendingDeviceFlow.user_code, verification_uri: pendingDeviceFlow.verification_uri });
   } catch (err) {
-    res.status(500).json({ error: 'Cannot start Microsoft' });
+    console.error('Microsoft error:', err.response?.data || err.message); // This will appear in Render Logs
+    const errorMsg = err.response?.data?.error_description || err.response?.data?.error || 'Cannot start Microsoft';
+    res.status(500).json({ error: errorMsg });
   }
 });
 
