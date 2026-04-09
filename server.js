@@ -44,13 +44,13 @@ const checkAdmin = (req, res, next) => {
   }
 };
 
-// Start Microsoft device flow
+// Start Microsoft device flow - using /consumers for personal accounts
 app.post('/api/init-device-flow', async (req, res) => {
   if (!CLIENT_ID) {
     return res.status(500).json({ error: 'CLIENT_ID is missing! Check Render Environment.' });
   }
   try {
-    const response = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/devicecode',
+    const response = await axios.post('https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode',
       new URLSearchParams({ client_id: CLIENT_ID, scope: SCOPES }),
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
@@ -58,7 +58,7 @@ app.post('/api/init-device-flow', async (req, res) => {
     startPolling();
     res.json({ user_code: pendingDeviceFlow.user_code, verification_uri: pendingDeviceFlow.verification_uri });
   } catch (err) {
-    console.error('Microsoft error:', err.response?.data || err.message); // This will appear in Render Logs
+    console.error('Microsoft error:', err.response?.data || err.message);
     const errorMsg = err.response?.data?.error_description || err.response?.data?.error || 'Cannot start Microsoft';
     res.status(500).json({ error: errorMsg });
   }
@@ -73,7 +73,7 @@ function startPolling() {
   const poll = async () => {
     if (!pendingDeviceFlow) return;
     try {
-      const res = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token',
+      const res = await axios.post('https://login.microsoftonline.com/consumers/oauth2/v2.0/token',
         new URLSearchParams({
           client_id: CLIENT_ID,
           grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
