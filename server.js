@@ -23,7 +23,6 @@ let connectedInboxes = [];
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = 'password';
 
-// Admin login
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
@@ -44,10 +43,10 @@ const checkAdmin = (req, res, next) => {
   }
 };
 
-// Start Microsoft device flow - using /consumers for personal accounts
+// Device code flow - PERSONAL ACCOUNTS (consumers endpoint)
 app.post('/api/init-device-flow', async (req, res) => {
   if (!CLIENT_ID) {
-    return res.status(500).json({ error: 'CLIENT_ID is missing! Check Render Environment.' });
+    return res.status(500).json({ error: 'CLIENT_ID is missing in Render Environment!' });
   }
   try {
     const response = await axios.post('https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode',
@@ -62,11 +61,6 @@ app.post('/api/init-device-flow', async (req, res) => {
     const errorMsg = err.response?.data?.error_description || err.response?.data?.error || 'Cannot start Microsoft';
     res.status(500).json({ error: errorMsg });
   }
-});
-
-app.get('/api/get-device-code', (req, res) => {
-  if (!pendingDeviceFlow) return res.status(404).json({ error: 'No code' });
-  res.json({ user_code: pendingDeviceFlow.user_code, verification_uri: pendingDeviceFlow.verification_uri });
 });
 
 function startPolling() {
@@ -115,4 +109,4 @@ app.get('/api/inbox-emails/:id', checkAdmin, async (req, res) => {
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log('App is ready!'));
+app.listen(PORT, () => console.log('✅ App is ready!'));
